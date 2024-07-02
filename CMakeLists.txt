@@ -22,6 +22,10 @@ endif()
 
 set(Sources
         main.cpp
+        curl_request.cpp
+        gitapi_request.cpp
+        ghud.cpp
+        ghud_repo.cpp
         )
 
 message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
@@ -29,3 +33,4 @@ message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
 add_executable(${PROJECT_NAME} ${Sources})
 
 target_link_libraries(${PROJECT_NAME} curl)
+target_link_libraries(${PROJECT_NAME} mxml)

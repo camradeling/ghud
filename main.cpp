@@ -1,38 +1,37 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <string>
+//--------------------------------------------------------------------------------------------------------------------------
 #include <iostream>
-#include <iterator>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-#include <filesystem>
-
+#include <string>
 #include <curl/curl.h>
+//--------------------------------------------------------------------------------------------------------------------------
+#include "mxml.h"
+#include "ghud.h"
+#include "gitapi_request.h"
+//--------------------------------------------------------------------------------------------------------------------------
+std::string configfile = "config.xml";
 //--------------------------------------------------------------------------------------------------------------------------
 int main (int argc, char ** argv)
 {
-	CURL *curl;
-    CURLcode res;
-
-    curl = curl_easy_init();
-    if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
-    /* example.com is redirected, so we tell libcurl to follow redirection */ 
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-
-    /* Perform the request, res will get the return code */ 
-    res = curl_easy_perform(curl);
-    /* Check for errors */ 
-    if(res != CURLE_OK)
-        fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-
-    /* always cleanup */ 
-    curl_easy_cleanup(curl);
+    FILE* fpconf=nullptr;
+    mxml_node_t* tree = nullptr;
+    bool confok = true;
+    if ((fpconf = fopen(configfile.c_str(), "r")) != NULL)        // открыть файл с конфигурацией в формате XML
+    {
+        tree = mxmlLoadFile (nullptr, fpconf, MXML_NO_CALLBACK);       // считать конфигурацию
+        fclose(fpconf);
+        if (tree == nullptr)
+        {
+            fprintf(stderr, "config file invalid\n");
+            confok = false;
+            exit(-1);
+        }
     }
+    else
+    {
+        fprintf(stderr, "cant open config file\n");
+        confok = false;
+        exit(-1);
+    }
+    GHUDNS::GHUD ghud(tree);
     return 0;
 }
 //--------------------------------------------------------------------------------------------------------------------------
