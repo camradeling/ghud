@@ -1,6 +1,6 @@
 #include "gitapi_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
-void GHUD::GitApiRequest::add_headers()
+void GHUDNS::GitApiRequest::add_headers()
 {
 	struct curl_slist *chunk = NULL;
 	/* Remove a header curl would otherwise add by itself */
@@ -14,7 +14,7 @@ void GHUD::GitApiRequest::add_headers()
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
 }
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUD::GitApiRequest::j_reply()
+nlohmann::json GHUDNS::GitApiRequest::j_reply()
 {
 	nlohmann::json jf = nlohmann::json::parse(reply.c_str());
 	return jf;

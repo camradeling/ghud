@@ -14,6 +14,9 @@ class GHUD
 {
 public:
 	GHUD(mxml_node_t* confnode);
+	void process();
+	std::string token() {return user_token;}
+public:
 	std::string user_token;
 	std::vector<GHUDRepo> repos;
 };

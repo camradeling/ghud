@@ -14,7 +14,7 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
     for (curnode = mxmlFindElement(confnode, confnode, "repo", NULL, NULL, MXML_DESCEND);
 	         curnode != NULL;
 	         curnode = mxmlFindElement(curnode, confnode, NULL, NULL, NULL, MXML_NO_DESCEND)) {
-    	GHUDNS::GHUDRepo repo(curnode);
+    	GHUDNS::GHUDRepo repo(curnode, this);
     	repos.push_back(repo);
     }
 }
