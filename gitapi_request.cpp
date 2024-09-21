@@ -1,3 +1,4 @@
+#include <iostream>
 #include "gitapi_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GitApiRequest::add_headers()
@@ -16,7 +17,21 @@ void GHUDNS::GitApiRequest::add_headers()
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GitApiRequest::j_reply()
 {
-	nlohmann::json jf = nlohmann::json::parse(reply.c_str());
-	return jf;
+	try {
+		nlohmann::json jf = nlohmann::json::parse(reply.c_str());
+		return jf;
+	}
+	catch(nlohmann::json::parse_error& ex) {
+		fprintf(stderr, "error parsing reply\n");
+		return nlohmann::json(); //empty
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------------
+int GHUDNS::GitApiRequest::perform()
+{
+	int res = GHUDNS::CurlRequest::perform();
+	if (CURL_DEBUG)
+		std::cout << std::setw(4) << j_reply();
+	return res;
 }
 //--------------------------------------------------------------------------------------------------------------------------

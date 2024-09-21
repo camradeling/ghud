@@ -45,17 +45,40 @@ void GHUDNS::GHUDRepo::mxml_parse_submodules(mxml_node_t* node)
      }
 }
 //--------------------------------------------------------------------------------------------------------------------------
-bool GHUDNS::GHUDRepo::check_branch_exist()
+nlohmann::json GHUDNS::GHUDRepo::list_branches()
 {
-	std::string url = "https://api.github.com/user/repos/" + repo_name + "/branches";
+	std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/branches";
 	GHUDNS::GitApiRequest request(url, ghud->token());
-	request.perform();
-	return true;
+     request.perform();
+	return request.j_reply();
+}
+//--------------------------------------------------------------------------------------------------------------------------
+nlohmann::json GHUDNS::GHUDRepo::list_repos()
+{
+     std::string url = "https://api.github.com/user/repos";
+     GHUDNS::GitApiRequest request(url, ghud->token());
+     request.perform();
+     return request.j_reply();
 }
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUDRepo::process()
 {
-	bool res = check_branch_exist();
-	fprintf(stdout, "branch %s %s.\n", branch.c_str(), res?"exists":"doesn\'t exist");
+	nlohmann::json branches = list_branches();
+     if (branches.empty()) {
+          fprintf(stderr, "branch check failed\n");
+          exit(-1);
+     }
+     nlohmann::json curnode;
+     for (auto& brnode : branches.items()) {
+          if (brnode.value().contains("name") && brnode.value()["name"] == branch) {
+               curnode = brnode;
+               break;
+          }
+     }
+     if(!curnode.empty())
+          fprintf(stdout, "branch %s exists.\n", branch.c_str());
+     else
+          fprintf(stdout, "branch %s doesn\'t exist.\n", branch.c_str());
+          
 }
 //--------------------------------------------------------------------------------------------------------------------------

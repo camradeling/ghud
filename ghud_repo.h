@@ -3,6 +3,7 @@
 //--------------------------------------------------------------------------------------------------------------------------
 #include <string>
 #include <vector>
+#include <nlohmann/json.hpp>
 //--------------------------------------------------------------------------------------------------------------------------
 #include "mxml.h"
 //--------------------------------------------------------------------------------------------------------------------------
@@ -20,7 +21,8 @@ public:
 	std::string repo_name;
 	std::string branch;
 	std::vector<GHUDRepo> submodules;
-	bool check_branch_exist();
+	nlohmann::json list_branches();
+	nlohmann::json list_repos();
 	void process();
 private:
 	GHUD* ghud = nullptr;

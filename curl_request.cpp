@@ -1,5 +1,7 @@
 #include "curl_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------------------------------
 size_t GHUDNS::CurlRequest::write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	if (!userp) {
@@ -26,7 +28,8 @@ int GHUDNS::CurlRequest::perform()
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlRequest::write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)this);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        if (CURL_DEBUG)
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         // add headers
         add_headers();
         /* Perform the request, res will get the return code */ 
@@ -38,6 +41,10 @@ int GHUDNS::CurlRequest::perform()
         }
         /* always cleanup */ 
         curl_easy_cleanup(curl);
+        curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+        if (http_code != 200)
+            return -4;
+
     }
     return 0;
 }

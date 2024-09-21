@@ -21,6 +21,7 @@ protected:
 	std::string git_url;
 	std::string user_token;
 	std::string reply;
+	long http_code = 0;
 };
 //--------------------------------------------------------------------------------------------------------------------------
 }//namespace GHUDNS

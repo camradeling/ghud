@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(ghud)
 option(DEBUG_BUILD "Option description" OFF)
+option(CURL_DEBUG "Print full curl replies" OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(BIN_DIR ${CMAKE_BINARY_DIR}/Binaries)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
@@ -19,6 +20,13 @@ else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s")
     #set(CMAKE_INSTALL_RPATH "/")
 endif()
+
+if(CURL_DEBUG)
+    message(STATUS "CURL_DEBUG = ON")
+    add_definitions(-DCURL_DEBUG=1)
+else()
+    add_definitions(-DCURL_DEBUG=0)
+endif() 
 
 set(Sources
         main.cpp

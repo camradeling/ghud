@@ -15,6 +15,7 @@ class GitApiRequest : public CurlRequest
 public:
 	GitApiRequest(std::string url, std::string token):CurlRequest(url,token){}
 	virtual nlohmann::json j_reply();
+	virtual int perform();
 private:
 	virtual void add_headers();
 };
