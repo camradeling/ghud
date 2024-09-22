@@ -16,8 +16,11 @@ public:
 	virtual std::string s_reply() { return reply; }
 protected:
 	virtual void add_headers(){}
+	virtual void set_method(){}
+	virtual void add_data(){}
 	CURL *curl;
 	CURLcode reply_code;
+	std::string method;
 	std::string git_url;
 	std::string user_token;
 	std::string reply;

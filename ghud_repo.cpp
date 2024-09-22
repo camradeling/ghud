@@ -6,6 +6,8 @@
 #include "ghud.h"
 #include "gitapi_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
+std::string update_branch_name = "test_update_submodules";
+//--------------------------------------------------------------------------------------------------------------------------
 GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
 {
 	ghud = gh;
@@ -45,6 +47,14 @@ void GHUDNS::GHUDRepo::mxml_parse_submodules(mxml_node_t* node)
      }
 }
 //--------------------------------------------------------------------------------------------------------------------------
+nlohmann::json GHUDNS::GHUDRepo::list_repos()
+{
+     std::string url = "https://api.github.com/user/repos";
+     GHUDNS::GitApiRequest request(url, ghud->token());
+     request.perform();
+     return request.j_reply();
+}
+//--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::list_branches()
 {
 	std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/branches";
@@ -53,9 +63,29 @@ nlohmann::json GHUDNS::GHUDRepo::list_branches()
 	return request.j_reply();
 }
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDRepo::list_repos()
+nlohmann::json GHUDNS::GHUDRepo::delete_branch(std::string branch)
 {
-     std::string url = "https://api.github.com/user/repos";
+     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/refs/heads/" + branch;
+     GHUDNS::GitApiDeleteRequest request(url, ghud->token());
+     request.perform();
+     return request.j_reply();
+}
+//--------------------------------------------------------------------------------------------------------------------------
+nlohmann::json GHUDNS::GHUDRepo::create_branch(std::string branch, std::string sha)
+{
+     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/refs";
+     nlohmann::json data;
+     data["ref"] = "refs/heads/" + branch;
+     data["sha"] = sha;
+     std::string postdata = data.dump();
+     GHUDNS::GitApiPostRequest request(url, ghud->token(), postdata);
+     request.perform();
+     return request.j_reply();
+}
+//--------------------------------------------------------------------------------------------------------------------------
+nlohmann::json GHUDNS::GHUDRepo::get_branch_head_commit()
+{
+     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/commits/" + branch;
      GHUDNS::GitApiRequest request(url, ghud->token());
      request.perform();
      return request.j_reply();
@@ -69,16 +99,36 @@ void GHUDNS::GHUDRepo::process()
           exit(-1);
      }
      nlohmann::json curnode;
+     nlohmann::json updnode;
      for (auto& brnode : branches.items()) {
           if (brnode.value().contains("name") && brnode.value()["name"] == branch) {
                curnode = brnode;
-               break;
+          }
+          else if (brnode.value().contains("name") && brnode.value()["name"] == update_branch_name) {
+               updnode = brnode;
           }
      }
      if(!curnode.empty())
           fprintf(stdout, "branch %s exists.\n", branch.c_str());
-     else
+     else {
           fprintf(stdout, "branch %s doesn\'t exist.\n", branch.c_str());
-          
+          exit(-1);
+     }
+     fprintf(stdout, "checking head commit of ranch %s\n", branch.c_str());
+     curnode = get_branch_head_commit();
+     if(curnode.empty()) {
+          fprintf(stdout, "failed to get head commit of %s.\n", branch.c_str());
+          exit(-1);
+     }
+
+     if(!updnode.empty()) {
+          fprintf(stdout, "branch %s exists. Deleting\n", update_branch_name.c_str());
+          delete_branch(update_branch_name);
+     }
+     std::string sha = curnode["sha"];
+     fprintf(stderr, "forking %s branch from %s commit %s\n", update_branch_name.c_str(),
+                                                                 branch.c_str(),
+                                                                 sha.c_str());
+     create_branch(update_branch_name, sha);
 }
 //--------------------------------------------------------------------------------------------------------------------------

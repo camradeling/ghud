@@ -18,6 +18,26 @@ public:
 	virtual int perform();
 private:
 	virtual void add_headers();
+	virtual void set_method(){}
+	virtual void add_data(){}
+};
+//--------------------------------------------------------------------------------------------------------------------------
+class GitApiDeleteRequest : public GitApiRequest
+{
+public:
+	GitApiDeleteRequest(std::string url, std::string token):GitApiRequest(url,token){}
+private:
+	virtual void set_method();
+};
+//--------------------------------------------------------------------------------------------------------------------------
+class GitApiPostRequest : public GitApiRequest
+{
+public:
+	GitApiPostRequest(std::string url, std::string token, std::string data):GitApiRequest(url,token){ postdata = data; }
+private:
+	std::string postdata;
+	virtual void set_method();
+	virtual void add_data();
 };
 //--------------------------------------------------------------------------------------------------------------------------
 }//namespace GHUDNS

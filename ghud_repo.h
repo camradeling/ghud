@@ -21,8 +21,11 @@ public:
 	std::string repo_name;
 	std::string branch;
 	std::vector<GHUDRepo> submodules;
-	nlohmann::json list_branches();
 	nlohmann::json list_repos();
+	nlohmann::json list_branches();
+	nlohmann::json delete_branch(std::string branch);
+	nlohmann::json create_branch(std::string branch, std::string sha);
+	nlohmann::json get_branch_head_commit();
 	void process();
 private:
 	GHUD* ghud = nullptr;

@@ -1,7 +1,5 @@
 #include "curl_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------------------------------------
 size_t GHUDNS::CurlRequest::write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	if (!userp) {
@@ -32,6 +30,8 @@ int GHUDNS::CurlRequest::perform()
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
         // add headers
         add_headers();
+        set_method();
+        add_data();
         /* Perform the request, res will get the return code */ 
         reply_code = curl_easy_perform(curl);
         /* Check for errors */ 
