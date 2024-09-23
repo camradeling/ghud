@@ -15,17 +15,24 @@ class GHUDRepo
 {
 public:
 	GHUDRepo(mxml_node_t* node, GHUD* gh);
-	std::string url;
-	std::string base_url;
-	std::string workgroup;
-	std::string repo_name;
-	std::string branch;
+	std::string url="";
+	std::string base_url="";
+	std::string workgroup="";
+	std::string repo_name="";
+	std::string source_branch_name="";
+	std::string update_branch_name = "";
+	std::string path="";
+	nlohmann::json source_branch_head_commit;
+	nlohmann::json update_branch_head_commit;
 	std::vector<GHUDRepo> submodules;
 	nlohmann::json list_repos();
 	nlohmann::json list_branches();
 	nlohmann::json delete_branch(std::string branch);
 	nlohmann::json create_branch(std::string branch, std::string sha);
-	nlohmann::json get_branch_head_commit();
+	nlohmann::json update_submodules();
+	nlohmann::json get_branch_head_commit(std::string branch);
+	nlohmann::json get_tree(std::string sha);
+	nlohmann::json move_branch_head(std::string branch, std::string sha);
 	void process();
 private:
 	GHUD* ghud = nullptr;

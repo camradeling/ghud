@@ -40,6 +40,16 @@ private:
 	virtual void add_data();
 };
 //--------------------------------------------------------------------------------------------------------------------------
+class GitApiPatchRequest : public GitApiRequest
+{
+public:
+	GitApiPatchRequest(std::string url, std::string token, std::string data):GitApiRequest(url,token){ postdata = data; }
+private:
+	std::string postdata;
+	virtual void set_method();
+	virtual void add_data();
+};
+//--------------------------------------------------------------------------------------------------------------------------
 }//namespace GHUDNS
 //--------------------------------------------------------------------------------------------------------------------------
 #endif/*GITAPI_REQUEST_H*/

@@ -58,3 +58,19 @@ void GHUDNS::GitApiPostRequest::add_data()
 	}
 }
 //--------------------------------------------------------------------------------------------------------------------------
+void GHUDNS::GitApiPatchRequest::set_method()
+{
+	if (curl)
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
+	// TODO: need to make check for success, http code will be 204
+}
+//--------------------------------------------------------------------------------------------------------------------------
+void GHUDNS::GitApiPatchRequest::add_data()
+{
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)postdata.size());
+		fprintf(stdout, "patch data: %s\n", postdata.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
+	}
+}
+//--------------------------------------------------------------------------------------------------------------------------
