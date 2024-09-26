@@ -33,6 +33,9 @@ public:
 	nlohmann::json get_branch_head_commit(std::string branch);
 	nlohmann::json get_tree(std::string sha);
 	nlohmann::json move_branch_head(std::string branch, std::string sha);
+	nlohmann::json create_update_pull_request();
+	nlohmann::json add_pull_request_reviewers(nlohmann::json pr);
+	nlohmann::json check_pull_request_status(nlohmann::json pr);
 	void process();
 private:
 	GHUD* ghud = nullptr;
