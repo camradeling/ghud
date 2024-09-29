@@ -103,35 +103,72 @@ nlohmann::json GHUDNS::GHUDRepo::create_branch(std::string branch, std::string s
      return request.j_reply();
 }
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDRepo::get_branch_head_commit(std::string branch)
+nlohmann::json GHUDNS::GHUDRepo::get_commit(std::string id)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/commits/" + branch;
+     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/commits/" + id;
      GHUDNS::GitApiRequest request(url, ghud->token());
      request.perform();
      return request.j_reply();
 }
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDRepo::update_submodules()
+nlohmann::json GHUDNS::GHUDRepo::get_branch_commits_since(std::string branch, std::string datetime)
+{
+     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/commits"
+               + "?sha=" + branch + "&since=" +datetime;
+     GHUDNS::GitApiRequest request(url, ghud->token());
+     request.perform();
+     return request.j_reply();
+}
+//--------------------------------------------------------------------------------------------------------------------------
+std::string GHUDNS::GHUDRepo::update_submodules()
 {
      if (submodules.size() == 0) {
           fprintf(stderr, "no submodules to update\n");
-          return nlohmann::json();
+          return "";
      }
      // assuming update_branch is and existing branch name
      // get master tree
      nlohmann::json tree = get_tree(source_branch_head_commit["commit"]["tree"]["sha"]);
      nlohmann::json newtree;
-     newtree["base_tree"] = source_branch_head_commit["sha"];
+     // traverse submodules and if their branch head and submodule ref don't match
+     // add to newtree
+     nlohmann::json commit_list;
      for (auto& node : tree["tree"]) {
           if (node["type"] != "commit")
                continue;
           for (auto& submodule : submodules) {
                if (submodule.path == node["path"]) {
-                    node["sha"] = submodule.source_branch_head_commit["sha"];
-                    newtree["tree"].push_back(node);
+                    if (node["sha"] != submodule.source_branch_head_commit["sha"]) {
+                         fprintf(stdout, "submodule %s updating parent repo ref from %s to %s\n",
+                                   submodule.repo_name.c_str(),
+                                   nlohmann::to_string(node["sha"]).c_str(),
+                                   nlohmann::to_string(submodule.source_branch_head_commit["sha"]).c_str());
+                         nlohmann::json submodule_headref = submodule.get_commit(node["sha"]);
+                         //fprintf(stderr, "submodule_headref: %s\n", nlohmann::to_string(submodule_headref).c_str());
+                         commit_list[submodule.repo_name] = submodule.get_branch_commits_since(submodule.source_branch_name,
+                                   submodule_headref["commit"]["committer"]["date"]);
+                         node["sha"] = submodule.source_branch_head_commit["sha"];
+                         newtree["tree"].push_back(node);
+                    }
+                    else
+                         fprintf(stdout, "submodule %s HEAD %s is equal to parent repo ref %s. Nothing to update\n",
+                                   submodule.repo_name.c_str(),
+                                   nlohmann::to_string(submodule.source_branch_head_commit["sha"]).c_str(),
+                                   nlohmann::to_string(node["sha"]).c_str());
                }
           }
      }
+     if (newtree.empty())
+          return nlohmann::json(); // return empty object
+     std::string commit_data = "Commits included:\n";
+     for (auto& slist : commit_list.items()) {
+          commit_data += "\t" + slist.key() + ":\n";
+          for (auto& comm : slist.value()) {
+               commit_data += "\t\t" + nlohmann::to_string(comm["commit"]["message"]) + "\n";
+          }
+     }
+
+     newtree["base_tree"] = source_branch_head_commit["sha"];
      std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/trees";
      GHUDNS::GitApiPostRequest request(url, ghud->token(), newtree.dump());
      request.perform();
@@ -145,7 +182,8 @@ nlohmann::json GHUDNS::GHUDRepo::update_submodules()
      GHUDNS::GitApiPostRequest request2(url2, ghud->token(), commit.dump());
      request2.perform();
      nlohmann::json commit_reply = request2.j_reply();
-     return move_branch_head(update_branch_name, commit_reply["sha"]);
+     move_branch_head(update_branch_name, commit_reply["sha"]);
+     return commit_data;
 }
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::get_tree(std::string sha)
@@ -190,7 +228,9 @@ void GHUDNS::GHUDRepo::process()
           exit(-1);
      }
      fprintf(stdout, "checking head commit of branch %s\n", source_branch_name.c_str());
-     source_branch_head_commit = get_branch_head_commit(source_branch_name);
+     // when passing a branch name - we get branch head commit
+     // when passing sha - we get a specific commit
+     source_branch_head_commit = get_commit(source_branch_name);
      if(source_branch_head_commit.empty()) {
           fprintf(stdout, "failed to get head commit of %s.\n", source_branch_name.c_str());
           exit(-1);
@@ -204,20 +244,21 @@ void GHUDNS::GHUDRepo::process()
           delete_branch(update_branch_name);
      }
      std::string sha = source_branch_head_commit["sha"];
-     fprintf(stderr, "forking %s branch from %s commit %s\n", update_branch_name.c_str(),
+     fprintf(stdout, "forking %s branch from %s commit %s\n", update_branch_name.c_str(),
                                                                  source_branch_name.c_str(),
                                                                  sha.c_str());
      create_branch(update_branch_name, sha);
-     update_branch_head_commit = get_branch_head_commit(update_branch_name);
+     update_branch_head_commit = get_commit(update_branch_name);
      if(update_branch_head_commit.empty()) {
           fprintf(stdout, "failed to get head commit of %s.\n", update_branch_name.c_str());
           exit(-1);
      }
-     if (update_submodules().empty())
+     std::string prbody = update_submodules();
+     if (prbody == "")
           return;
 
      pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest("https://api.github.com/repos/" + 
-                                                                 workgroup + "/" + repo_name + "/pulls", this));
+                                                                 workgroup + "/" + repo_name + "/pulls", this, prbody));
      pr->process();
 }
 //--------------------------------------------------------------------------------------------------------------------------

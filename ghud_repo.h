@@ -36,8 +36,9 @@ private:
 	nlohmann::json list_branches();
 	nlohmann::json delete_branch(std::string branch);
 	nlohmann::json create_branch(std::string branch, std::string sha);
-	nlohmann::json update_submodules();
-	nlohmann::json get_branch_head_commit(std::string branch);
+	std::string update_submodules();
+	nlohmann::json get_commit(std::string id);
+	nlohmann::json get_branch_commits_since(std::string branch, std::string datetime);
 	nlohmann::json get_tree(std::string sha);
 	nlohmann::json move_branch_head(std::string branch, std::string sha);
 };
