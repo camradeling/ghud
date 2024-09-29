@@ -1,27 +1,37 @@
-#ifndef GHUD_H
-#define GHUD_H
+#ifndef GHUD_PULL_REQUEST_H
+#define GHUD_PULL_REQUEST_H
 //--------------------------------------------------------------------------------------------------------------------------
-#include <vector>
 #include <string>
-//--------------------------------------------------------------------------------------------------------------------------
-#include "mxml.h"
-#include "ghud_repo.h"
+#include <vector>
+#include <nlohmann/json.hpp>
 //--------------------------------------------------------------------------------------------------------------------------
 namespace GHUDNS
 {
+class GHUD;
+class GHUDRepo;
 //--------------------------------------------------------------------------------------------------------------------------
-class GHUD
+typedef struct reviewer_s
+{
+	std::string name;
+	std::string email;
+	std::string status = "UNKNOWN";
+} GHUDReviewer;
+//--------------------------------------------------------------------------------------------------------------------------
+class GHUDPullRequest
 {
 public:
-	GHUD(mxml_node_t* confnode);
+	GHUDPullRequest(std::string url, GHUDRepo* srcrepo) { baseurl = url; repo = srcrepo; }
 	void process();
-	std::string token() {return user_token;}
-public:
-	std::string user_token;
-	std::vector<GHUDRepo> repos;
+private:
+	nlohmann::json create_update_pull_request();
+	nlohmann::json add_reviewers();
+	nlohmann::json check_status();
+	GHUDRepo* repo;
+	std::string baseurl;
+	int number=-1;
 	std::vector<GHUDReviewer> reviewers;
 };
 //--------------------------------------------------------------------------------------------------------------------------
 }//namespace GHUD
 //--------------------------------------------------------------------------------------------------------------------------
-#endif/*GHUD_H*/
+#endif/*GHUD_PULL_REQUEST_H*/

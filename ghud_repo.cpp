@@ -203,59 +203,13 @@ nlohmann::json GHUDNS::GHUDRepo::move_branch_head(std::string branch, std::strin
      return request.j_reply();
 }
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDRepo::create_update_pull_request()
-{
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/pulls";
-     nlohmann::json data;
-     data["title"] = "testing pull request functionality";
-     data["body"] = "OMG! it's really working!";
-     data["head"] = update_branch_name;
-     data["base"] = source_branch_name;
-     GHUDNS::GitApiPostRequest request(url, ghud->token(), data.dump());
-     request.perform();
-     return request.j_reply();
-}
-//--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDRepo::add_pull_request_reviewers(nlohmann::json pr)
-{
-     nlohmann::json data;
-     data["reviewers"].push_back("k111111111111");
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/pulls/" + std::to_string(int(pr["number"])) + "/requested_reviewers";
-     GHUDNS::GitApiPostRequest request(url, ghud->token(), data.dump());
-     request.perform();
-     return request.j_reply();
-}
-//--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDRepo::check_pull_request_status(nlohmann::json pr)
-{
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/pulls/" + std::to_string(int(pr["number"])) + "/reviews";
-     GHUDNS::GitApiRequest request(url, ghud->token());
-     request.perform();
-     return request.j_reply();
-}
-//--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUDRepo::process()
 {
      if (update_submodules().empty())
           return;
-     nlohmann::json pr = create_update_pull_request();
-     int num = pr["number"];
-     add_pull_request_reviewers(pr);
-     while (1) {
-          fprintf(stdout, "checking PR status\n");
-          nlohmann::json revstat = check_pull_request_status(pr);
-          if (revstat.size() == 0) {
-               fprintf(stdout, "PR %d not yet approved\n",num);
-          }
-          else {
-               for (auto& rev : revstat) {
-                    if (rev["state"] == "APPROVED")
-                         fprintf(stdout, "PR %d approved\n",num);
-                    else
-                         fprintf(stdout, "PR %d not yet approved\n",num);
-               }
-          }
-          sleep(15);
-     }
+
+     pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest("https://api.github.com/repos/" + 
+                                                                 workgroup + "/" + repo_name + "/pulls", this));
+     pr->process();
 }
 //--------------------------------------------------------------------------------------------------------------------------

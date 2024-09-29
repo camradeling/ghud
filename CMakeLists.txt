@@ -34,6 +34,7 @@ set(Sources
         gitapi_request.cpp
         ghud.cpp
         ghud_repo.cpp
+        pull_request.cpp
         )
 
 message(STATUS "CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR}")
