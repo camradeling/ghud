@@ -7,7 +7,7 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
 	mxml_node_t* curnode;
 	curnode = mxmlFindElement(confnode, confnode, "user_token", NULL, NULL, MXML_DESCEND);
 	if (!curnode) {
-		std::cout << "user token not found" << std::endl;
+		std::cout << "user_token not found" << std::endl;
 		exit(-1);
 	}
 	user_token = (char *) mxmlGetText(curnode, NULL);

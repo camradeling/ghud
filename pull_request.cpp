@@ -4,11 +4,11 @@
 #include "gitapi_request.h"
 #include "pull_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDPullRequest::create_update_pull_request()
+nlohmann::json GHUDNS::GHUDPullRequest::create()
 {
      std::string url = baseurl;
      nlohmann::json data;
-     data["title"] = "testing pull request functionality";
+     data["title"] = repo->update_pr_title;
      data["body"] = "OMG! it's really working!";
      data["head"] = repo->update_branch_name;
      data["base"] = repo->source_branch_name;
@@ -39,7 +39,7 @@ nlohmann::json GHUDNS::GHUDPullRequest::check_status()
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUDPullRequest::process()
 {
-     nlohmann::json pr = create_update_pull_request();
+     nlohmann::json pr = create();
      number = pr["number"];
      add_reviewers();
      while (1) {

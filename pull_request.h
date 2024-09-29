@@ -23,7 +23,7 @@ public:
 	GHUDPullRequest(std::string url, GHUDRepo* srcrepo) { baseurl = url; repo = srcrepo; }
 	void process();
 private:
-	nlohmann::json create_update_pull_request();
+	nlohmann::json create();
 	nlohmann::json add_reviewers();
 	nlohmann::json check_status();
 	GHUDRepo* repo;

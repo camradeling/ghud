@@ -45,51 +45,16 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      base_url = sm[1];
      workgroup = sm[2];
      repo_name = sm[3];
+     urlnode = mxmlFindElement(node, node, "update_pr_title", NULL, NULL, MXML_DESCEND);
+     if (!urlnode) {
+          std::cout << "update_pr_title not found, keep default" << std::endl;
+     }
+     else {
+          update_pr_title = (char *) mxmlElementGetAttr(urlnode, "text");
+     }
      fprintf(stdout, "repo name %s, workgroup %s, base %s, path %s\n",
                repo_name.c_str(), workgroup.c_str(), base_url.c_str(), path.c_str());
-     nlohmann::json branches = list_branches();
-     if (branches.empty()) {
-          fprintf(stderr, "branch list failed\n");
-          exit(-1);
-     }
-     nlohmann::json curnode;
-     nlohmann::json updnode;
-     for (auto& brnode : branches.items()) {
-          if (brnode.value().contains("name") && brnode.value()["name"] == source_branch_name) {
-               curnode = brnode;
-          }
-          else if (brnode.value().contains("name") && brnode.value()["name"] == update_branch_name) {
-               updnode = brnode;
-          }
-     }
-     if(curnode.empty()) {
-          fprintf(stdout, "branch %s doesn\'t exist.\n", source_branch_name.c_str());
-          exit(-1);
-     }
-     fprintf(stdout, "checking head commit of branch %s\n", source_branch_name.c_str());
-     source_branch_head_commit = get_branch_head_commit(source_branch_name);
-     if(source_branch_head_commit.empty()) {
-          fprintf(stdout, "failed to get head commit of %s.\n", source_branch_name.c_str());
-          exit(-1);
-     }
      mxml_parse_submodules(node);
-     // if no update branch name specified - this is probably a leaf
-     if (update_branch_name == "")
-          return;
-     if(!updnode.empty()) {
-          fprintf(stdout, "branch %s exists. Deleting\n", update_branch_name.c_str());
-          delete_branch(update_branch_name);
-     }
-     std::string sha = source_branch_head_commit["sha"];
-     fprintf(stderr, "forking %s branch from %s commit %s\n", update_branch_name.c_str(),
-                                                                 source_branch_name.c_str(),
-                                                                 sha.c_str());
-     create_branch(update_branch_name, sha);
-     update_branch_head_commit = get_branch_head_commit(update_branch_name);
-     if(update_branch_head_commit.empty()) {
-          fprintf(stdout, "failed to get head commit of %s.\n", update_branch_name.c_str());
-          exit(-1);
-     }
 }
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUDRepo::mxml_parse_submodules(mxml_node_t* node)
@@ -152,8 +117,6 @@ nlohmann::json GHUDNS::GHUDRepo::update_submodules()
           fprintf(stderr, "no submodules to update\n");
           return nlohmann::json();
      }
-     for (auto& submodule : submodules)
-          submodule.process();
      // assuming update_branch is and existing branch name
      // get master tree
      nlohmann::json tree = get_tree(source_branch_head_commit["commit"]["tree"]["sha"]);
@@ -205,6 +168,51 @@ nlohmann::json GHUDNS::GHUDRepo::move_branch_head(std::string branch, std::strin
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUDRepo::process()
 {
+     for (auto& submodule : submodules)
+          submodule.process();
+     nlohmann::json branches = list_branches();
+     if (branches.empty()) {
+          fprintf(stderr, "branch list failed\n");
+          exit(-1);
+     }
+     nlohmann::json curnode;
+     nlohmann::json updnode;
+     for (auto& brnode : branches.items()) {
+          if (brnode.value().contains("name") && brnode.value()["name"] == source_branch_name) {
+               curnode = brnode;
+          }
+          else if (brnode.value().contains("name") && brnode.value()["name"] == update_branch_name) {
+               updnode = brnode;
+          }
+     }
+     if(curnode.empty()) {
+          fprintf(stdout, "branch %s doesn\'t exist.\n", source_branch_name.c_str());
+          exit(-1);
+     }
+     fprintf(stdout, "checking head commit of branch %s\n", source_branch_name.c_str());
+     source_branch_head_commit = get_branch_head_commit(source_branch_name);
+     if(source_branch_head_commit.empty()) {
+          fprintf(stdout, "failed to get head commit of %s.\n", source_branch_name.c_str());
+          exit(-1);
+     }
+
+     // if no update branch name specified - this is probably a leaf
+     if (update_branch_name == "")
+          return;
+     if(!updnode.empty()) {
+          fprintf(stdout, "branch %s exists. Deleting\n", update_branch_name.c_str());
+          delete_branch(update_branch_name);
+     }
+     std::string sha = source_branch_head_commit["sha"];
+     fprintf(stderr, "forking %s branch from %s commit %s\n", update_branch_name.c_str(),
+                                                                 source_branch_name.c_str(),
+                                                                 sha.c_str());
+     create_branch(update_branch_name, sha);
+     update_branch_head_commit = get_branch_head_commit(update_branch_name);
+     if(update_branch_head_commit.empty()) {
+          fprintf(stdout, "failed to get head commit of %s.\n", update_branch_name.c_str());
+          exit(-1);
+     }
      if (update_submodules().empty())
           return;
 

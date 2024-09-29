@@ -22,6 +22,7 @@ public:
 	std::string update_branch_name = "";
 	nlohmann::json source_branch_head_commit;
 	nlohmann::json update_branch_head_commit;
+	std::string update_pr_title="updating submodules hashes";
 private:
 	std::shared_ptr<GHUDPullRequest> pr;
 	void mxml_parse_submodules(mxml_node_t* node);
