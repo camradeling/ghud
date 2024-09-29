@@ -137,15 +137,19 @@ std::string GHUDNS::GHUDRepo::update_submodules()
                continue;
           for (auto& submodule : submodules) {
                if (submodule.path == node["path"]) {
-                    if (node["sha"] != submodule.source_branch_head_commit["sha"]) {
+                    submodule.parent_ref = node["sha"];
+                    if (submodule.parent_ref != submodule.source_branch_head_commit["sha"]) {
                          fprintf(stdout, "submodule %s updating parent repo ref from %s to %s\n",
                                    submodule.repo_name.c_str(),
-                                   nlohmann::to_string(node["sha"]).c_str(),
+                                   submodule.parent_ref.c_str(),
                                    nlohmann::to_string(submodule.source_branch_head_commit["sha"]).c_str());
-                         nlohmann::json submodule_headref = submodule.get_commit(node["sha"]);
-                         //fprintf(stderr, "submodule_headref: %s\n", nlohmann::to_string(submodule_headref).c_str());
-                         commit_list[submodule.repo_name] = submodule.get_branch_commits_since(submodule.source_branch_name,
+                         nlohmann::json submodule_headref = submodule.get_commit(submodule.parent_ref);
+                         nlohmann::json new_commits = submodule.get_branch_commits_since(submodule.source_branch_name,
                                    submodule_headref["commit"]["committer"]["date"]);
+                         // exclude parent_ref submodule commit
+                         for (auto& comm : new_commits)
+                              if (comm["commit"]["committer"]["date"] != submodule_headref["commit"]["committer"]["date"])
+                                   commit_list[submodule.repo_name].push_back(comm);
                          node["sha"] = submodule.source_branch_head_commit["sha"];
                          newtree["tree"].push_back(node);
                     }
@@ -153,7 +157,7 @@ std::string GHUDNS::GHUDRepo::update_submodules()
                          fprintf(stdout, "submodule %s HEAD %s is equal to parent repo ref %s. Nothing to update\n",
                                    submodule.repo_name.c_str(),
                                    nlohmann::to_string(submodule.source_branch_head_commit["sha"]).c_str(),
-                                   nlohmann::to_string(node["sha"]).c_str());
+                                   submodule.parent_ref.c_str());
                }
           }
      }
@@ -166,7 +170,6 @@ std::string GHUDNS::GHUDRepo::update_submodules()
                commit_data += "\t\t" + nlohmann::to_string(comm["commit"]["message"]) + "\n";
           }
      }
-
      newtree["base_tree"] = source_branch_head_commit["sha"];
      std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/trees";
      GHUDNS::GitApiPostRequest request(url, ghud->token(), newtree.dump());

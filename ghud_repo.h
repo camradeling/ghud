@@ -31,6 +31,7 @@ private:
 	std::string workgroup="";
 	std::string repo_name="";
 	std::string path="";
+	std::string parent_ref="";
 	std::vector<GHUDRepo> submodules;
 	nlohmann::json list_repos();
 	nlohmann::json list_branches();
