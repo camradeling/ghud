@@ -15,11 +15,12 @@ class GHUD
 public:
 	GHUD(mxml_node_t* confnode);
 	void process();
+	void parse_reviewers(mxml_node_t* node);
 	std::string token() {return user_token;}
+	std::vector<GHUDReviewer> reviewers;
 public:
 	std::string user_token;
 	std::vector<GHUDRepo> repos;
-	std::vector<GHUDReviewer> reviewers;
 };
 //--------------------------------------------------------------------------------------------------------------------------
 }//namespace GHUD

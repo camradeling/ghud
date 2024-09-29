@@ -31,6 +31,7 @@ int main (int argc, char ** argv)
         exit(-1);
     }
     GHUDNS::GHUD ghud(tree);
+
     for (auto repo : ghud.repos) {
         repo.process();
     }

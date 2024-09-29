@@ -19,8 +19,10 @@ nlohmann::json GHUDNS::GHUDPullRequest::create_update_pull_request()
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDPullRequest::add_reviewers()
 {
+     reviewers.insert(reviewers.end(), repo->ghud->reviewers.begin(), repo->ghud->reviewers.end());
      nlohmann::json data;
-     data["reviewers"].push_back("k111111111111");
+     for (auto& reviewer : reviewers)
+          data["reviewers"].push_back(reviewer.name);
      std::string url = baseurl + "/" + std::to_string(number) + "/requested_reviewers";
      GHUDNS::GitApiPostRequest request(url, repo->ghud->token(), data.dump());
      request.perform();
