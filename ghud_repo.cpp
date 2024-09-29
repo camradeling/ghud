@@ -42,9 +42,9 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      	fprintf(stderr, "parsing repo url, no match\n");
      	exit(-1);
      }
-     base_url = sm[1];
      workgroup = sm[2];
      repo_name = sm[3];
+     base_url = "https://api.github.com/repos/" + workgroup + "/" + repo_name;
      urlnode = mxmlFindElement(node, node, "update_pr_title", NULL, NULL, MXML_DESCEND);
      if (!urlnode) {
           std::cout << "update_pr_title not found, keep default" << std::endl;
@@ -78,7 +78,7 @@ nlohmann::json GHUDNS::GHUDRepo::list_repos()
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::list_branches()
 {
-	std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/branches";
+	std::string url = base_url + "/branches";
 	GHUDNS::GitApiRequest request(url, ghud->token());
      request.perform();
 	return request.j_reply();
@@ -86,7 +86,7 @@ nlohmann::json GHUDNS::GHUDRepo::list_branches()
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::delete_branch(std::string branch)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/refs/heads/" + branch;
+     std::string url = base_url + "/git/refs/heads/" + branch;
      GHUDNS::GitApiDeleteRequest request(url, ghud->token());
      request.perform();
      return request.j_reply();
@@ -94,7 +94,7 @@ nlohmann::json GHUDNS::GHUDRepo::delete_branch(std::string branch)
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::create_branch(std::string branch, std::string sha)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/refs";
+     std::string url = base_url + "/git/refs";
      nlohmann::json data;
      data["ref"] = "refs/heads/" + branch;
      data["sha"] = sha;
@@ -105,7 +105,7 @@ nlohmann::json GHUDNS::GHUDRepo::create_branch(std::string branch, std::string s
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::get_commit(std::string id)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/commits/" + id;
+     std::string url = base_url + "/commits/" + id;
      GHUDNS::GitApiRequest request(url, ghud->token());
      request.perform();
      return request.j_reply();
@@ -113,8 +113,7 @@ nlohmann::json GHUDNS::GHUDRepo::get_commit(std::string id)
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::get_branch_commits_since(std::string branch, std::string datetime)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/commits"
-               + "?sha=" + branch + "&since=" +datetime;
+     std::string url = base_url + "/commits" + "?sha=" + branch + "&since=" +datetime;
      GHUDNS::GitApiRequest request(url, ghud->token());
      request.perform();
      return request.j_reply();
@@ -177,7 +176,7 @@ std::string GHUDNS::GHUDRepo::update_submodules()
      nlohmann::json commit;
      commit["message"] = "updating submodules hash";
      commit["tree"] = tree_reply["sha"];
-     commit["parents"].push_back(update_branch_head_commit["sha"]); 
+     commit["parents"].push_back(update_branch_head_commit["sha"]);
      std::string url2 = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/commits";
      GHUDNS::GitApiPostRequest request2(url2, ghud->token(), commit.dump());
      request2.perform();
@@ -188,7 +187,7 @@ std::string GHUDNS::GHUDRepo::update_submodules()
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::get_tree(std::string sha)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/trees/" + sha;
+     std::string url = base_url + "/git/trees/" + sha;
      GHUDNS::GitApiRequest request(url, ghud->token());
      request.perform();
      return request.j_reply();
@@ -196,7 +195,7 @@ nlohmann::json GHUDNS::GHUDRepo::get_tree(std::string sha)
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::move_branch_head(std::string branch, std::string sha)
 {
-     std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/refs/heads/" + branch;
+     std::string url = base_url + "/git/refs/heads/" + branch;
      nlohmann::json data;
      data["sha"] = sha;
      GHUDNS::GitApiPatchRequest request(url, ghud->token(), data.dump());
@@ -257,8 +256,7 @@ void GHUDNS::GHUDRepo::process()
      if (prbody == "")
           return;
 
-     pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest("https://api.github.com/repos/" + 
-                                                                 workgroup + "/" + repo_name + "/pulls", this, prbody));
+     pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest(base_url + "/pulls", this, prbody));
      pr->process();
 }
 //--------------------------------------------------------------------------------------------------------------------------
