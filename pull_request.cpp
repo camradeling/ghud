@@ -29,9 +29,17 @@ nlohmann::json GHUDNS::GHUDPullRequest::add_reviewers()
      return request.j_reply();
 }
 //--------------------------------------------------------------------------------------------------------------------------
-nlohmann::json GHUDNS::GHUDPullRequest::check_status()
+nlohmann::json GHUDNS::GHUDPullRequest::check_review_statuses()
 {
      std::string url = baseurl + "/" + std::to_string(number) + "/reviews";
+     GHUDNS::GitApiRequest request(url, repo->ghud->token());
+     request.perform();
+     return request.j_reply();
+}
+//--------------------------------------------------------------------------------------------------------------------------
+nlohmann::json GHUDNS::GHUDPullRequest::check_status()
+{
+     std::string url = baseurl + "/" + std::to_string(number);
      GHUDNS::GitApiRequest request(url, repo->ghud->token());
      request.perform();
      return request.j_reply();
@@ -44,17 +52,26 @@ void GHUDNS::GHUDPullRequest::process()
      add_reviewers();
      while (1) {
           fprintf(stdout, "checking PR status\n");
-          nlohmann::json revstat = check_status();
+          nlohmann::json revstat = check_review_statuses();
+          int approved = 0;
           if (revstat.size() == 0) {
                fprintf(stdout, "PR %d not yet approved\n",number);
           }
           else {
                for (auto& rev : revstat) {
-                    if (rev["state"] == "APPROVED")
+                    if (rev["state"] == "APPROVED") {
                          fprintf(stdout, "PR %d approved\n",number);
+                         approved++;
+                    }
                     else
                          fprintf(stdout, "PR %d not yet approved\n",number);
                }
+          }
+          nlohmann::json prstat = check_status();
+          fprintf(stdout, "PR is %s\n", nlohmann::to_string(prstat["state"]).c_str());
+          if (prstat["state"] == "closed") {
+               fprintf(stdout, "consider this merged for now\n");
+               break;
           }
           sleep(15);
      }

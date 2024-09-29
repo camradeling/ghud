@@ -161,8 +161,10 @@ std::string GHUDNS::GHUDRepo::update_submodules()
                }
           }
      }
-     if (newtree.empty())
-          return nlohmann::json(); // return empty object
+     if (newtree.empty()) {
+          fprintf(stdout, "Repository %s: no submodules to update. Step out\n", repo_name.c_str());
+          return ""; // return empty object
+     }
      std::string commit_data = "Commits included:\n";
      for (auto& slist : commit_list.items()) {
           commit_data += "\t" + slist.key() + ":\n";
@@ -256,8 +258,9 @@ void GHUDNS::GHUDRepo::process()
           exit(-1);
      }
      std::string prbody = update_submodules();
-     if (prbody == "")
+     if (prbody == "") {
           return;
+     }
 
      pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest(base_url + "/pulls", this, prbody));
      pr->process();

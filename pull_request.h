@@ -26,6 +26,7 @@ private:
 	nlohmann::json create();
 	nlohmann::json add_reviewers();
 	nlohmann::json check_status();
+	nlohmann::json check_review_statuses();
 	GHUDRepo* repo;
 	std::string baseurl;
 	std::string body;

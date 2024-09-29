@@ -34,6 +34,7 @@ int main (int argc, char ** argv)
     for (auto repo : ghud.repos) {
         repo.process();
     }
+    fprintf(stdout, "All updates finished\n");
     return 0;
 }
 //--------------------------------------------------------------------------------------------------------------------------
