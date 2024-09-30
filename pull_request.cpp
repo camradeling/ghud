@@ -6,16 +6,16 @@
 //--------------------------------------------------------------------------------------------------------------------------
 std::string GHUDNS::GHUDPullRequest::create_body()
 {
-     // TODO: check for errors
+     int pos = 0;
      std::string result = repo->ghud->pr_template;
-     result = result.replace(result.find("DESCRIPTION_PLACEHOLDER", 0),
-               strlen("DESCRIPTION_PLACEHOLDER"), repo->DESCRIPTION_PLACEHOLDER);
-     result = result.replace(result.find("PLATFORMS_PLACEHOLDER", 0),
-               strlen("PLATFORMS_PLACEHOLDER"), repo->PLATFORMS_PLACEHOLDER);
-     result = result.replace(result.find("JIRANUM_PLACEHOLDER", 0),
-               strlen("JIRANUM_PLACEHOLDER"), repo->JIRANUM_PLACEHOLDER);
-     result = result.replace(result.find("COMMITS_PLACEHOLDER", 0),
-               strlen("COMMITS_PLACEHOLDER"), repo->integrated_commits);
+     if (std::string::npos != (pos = result.find("DESCRIPTION_PLACEHOLDER", 0)))
+          result = result.replace(pos, strlen("DESCRIPTION_PLACEHOLDER"), repo->DESCRIPTION_PLACEHOLDER);
+     if (std::string::npos != (pos = result.find("PLATFORMS_PLACEHOLDER", 0)))
+          result = result.replace(pos, strlen("PLATFORMS_PLACEHOLDER"), repo->PLATFORMS_PLACEHOLDER);
+     if (std::string::npos != (pos = result.find("JIRANUM_PLACEHOLDER", 0)))
+          result = result.replace(pos, strlen("JIRANUM_PLACEHOLDER"), repo->JIRANUM_PLACEHOLDER);
+     if (std::string::npos != (pos = result.find("COMMITS_PLACEHOLDER", 0)))
+          result = result.replace(pos, strlen("COMMITS_PLACEHOLDER"), repo->integrated_commits);
      return result;
 }
 //--------------------------------------------------------------------------------------------------------------------------

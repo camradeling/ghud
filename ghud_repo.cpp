@@ -7,6 +7,7 @@
 #include "ghud.h"
 #include "gitapi_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------
 GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
 {
      ghud = gh;
@@ -191,13 +192,16 @@ std::string GHUDNS::GHUDRepo::update_submodules()
           commit_data += "    " + slist.key() + ":\n\n";
           for (auto& comm : slist.value()) {
                std::string message = comm["commit"]["message"];
+               message = ([](std::string message)->std::string{ std::regex newlines_re("\n+");
+                                        return std::regex_replace(message, newlines_re, " ");
+                                        })(message);
                std::string sha = comm["sha"];
                commit_data += "        " + message + " " + sha + "\n";
           }
           commit_data += "\n";
      }
      for (auto& submodule : submodules) {
-          commit_data += "\n" + submodule.integrated_commits + "\n";
+          commit_data += submodule.integrated_commits;
      }
      newtree["base_tree"] = source_branch_head_commit["sha"];
      std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/trees";
