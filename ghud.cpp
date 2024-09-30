@@ -8,7 +8,7 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
 	mxml_node_t* curnode;
 	curnode = mxmlFindElement(confnode, confnode, "user_token_env", NULL, NULL, MXML_DESCEND);
 	if (!curnode) {
-		std::cout << "user_token_env not found" << std::endl;
+		fprintf(stderr, "user_token_env not found");
 		exit(-1);
 	}
 	char* user_token_env = (char *) mxmlGetText(curnode, NULL);
@@ -30,16 +30,14 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
     }
     curnode = mxmlFindElement(confnode, confnode, "reviewers", NULL, NULL, MXML_DESCEND);
 	if (!curnode) {
-		std::cout << "reviewers node not found" << std::endl;
+		fprintf(stderr, "reviewers node not found");
 		exit(-1);
 	}
-	fprintf(stdout, "parsing reviewers\n");
 	parse_reviewers(curnode);
 	std::ifstream myfile ("pull_request.md");
 	std::string line;
 	while (getline(myfile, line))
 		pr_template += line + "\n";
-	fprintf(stdout, "print pr_template: %s\n", pr_template.c_str());
 }
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUD::parse_reviewers(mxml_node_t* node)

@@ -9,30 +9,30 @@
 //--------------------------------------------------------------------------------------------------------------------------
 GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
 {
-	ghud = gh;
-	mxml_node_t* urlnode;
+     ghud = gh;
+     mxml_node_t* urlnode;
      mxml_node_t* seeknode;
      urlnode = mxmlFindElement(node, node, "url", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-     	std::cout << "url not found" << std::endl;
-     	exit(-1);
+          fprintf(stderr, "url not found");
+          exit(-1);
      }
      url = (char *) mxmlGetText(urlnode, NULL);
      urlnode = mxmlFindElement(node, node, "branch", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          std::cout << "source branch name not found" << std::endl;
+          fprintf(stderr, "source branch name not found");
           exit(-1);
      }
      source_branch_name = (char *) mxmlGetText(urlnode, NULL);
      urlnode = mxmlFindElement(node, node, "update_branch", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          std::cout << "update branch name not found" << std::endl;
+          fprintf(stderr, "update branch name not found");
      }
      else
           update_branch_name = (char *) mxmlGetText(urlnode, NULL);
      urlnode = mxmlFindElement(node, node, "path", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          std::cout << "path not found" << std::endl;
+          fprintf(stderr, "path not found");
      }
      else
           path = (char *) mxmlGetText(urlnode, NULL);
@@ -40,19 +40,19 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      // PR attributes
      urlnode = mxmlFindElement(node, node, "DESCRIPTION_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          std::cout << "DESCRIPTION_PLACEHOLDER not found" << std::endl;
+          fprintf(stderr, "DESCRIPTION_PLACEHOLDER not found");
      }
      else
           DESCRIPTION_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
      urlnode = mxmlFindElement(node, node, "PLATFORMS_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          std::cout << "PLATFORMS_PLACEHOLDER not found" << std::endl;
+          fprintf(stderr, "PLATFORMS_PLACEHOLDER not found");
      }
      else
           PLATFORMS_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
      urlnode = mxmlFindElement(node, node, "JIRANUM_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          std::cout << "JIRANUM_PLACEHOLDER not found" << std::endl;
+          fprintf(stderr, "JIRANUM_PLACEHOLDER not found");
      }
      else
           JIRANUM_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
@@ -68,7 +68,7 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      base_url = "https://api.github.com/repos/" + workgroup + "/" + repo_name;
      urlnode = mxmlFindElement(node, node, "update_pr_title", NULL, NULL, MXML_DESCEND);
      if (!urlnode) {
-          std::cout << "update_pr_title not found, keep default" << std::endl;
+          fprintf(stderr, "update_pr_title not found, keep default");
      }
      else {
           update_pr_title = (char *) mxmlElementGetAttr(urlnode, "text");
@@ -184,7 +184,7 @@ std::string GHUDNS::GHUDRepo::update_submodules()
      }
      if (newtree.empty()) {
           fprintf(stdout, "Repository %s: no submodules to update. Step out\n", repo_name.c_str());
-          return ""; // return empty object
+          return ""; // return empty string
      }
      std::string commit_data="";
      for (auto& slist : commit_list.items()) {
@@ -255,7 +255,7 @@ void GHUDNS::GHUDRepo::process()
           }
      }
      if(curnode.empty()) {
-          fprintf(stdout, "branch %s doesn\'t exist.\n", source_branch_name.c_str());
+          fprintf(stderr, "branch %s doesn\'t exist.\n", source_branch_name.c_str());
           exit(-1);
      }
      fprintf(stdout, "checking head commit of branch %s\n", source_branch_name.c_str());
@@ -263,7 +263,7 @@ void GHUDNS::GHUDRepo::process()
      // when passing sha - we get a specific commit
      source_branch_head_commit = get_commit(source_branch_name);
      if(source_branch_head_commit.empty()) {
-          fprintf(stdout, "failed to get head commit of %s.\n", source_branch_name.c_str());
+          fprintf(stderr, "failed to get head commit of %s.\n", source_branch_name.c_str());
           exit(-1);
      }
 
@@ -281,7 +281,7 @@ void GHUDNS::GHUDRepo::process()
      create_branch(update_branch_name, sha);
      update_branch_head_commit = get_commit(update_branch_name);
      if(update_branch_head_commit.empty()) {
-          fprintf(stdout, "failed to get head commit of %s.\n", update_branch_name.c_str());
+          fprintf(stderr, "failed to get head commit of %s.\n", update_branch_name.c_str());
           exit(-1);
      }
      integrated_commits = update_submodules();
@@ -291,5 +291,13 @@ void GHUDNS::GHUDRepo::process()
 
      pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest(base_url + "/pulls", this));
      pr->process();
+     fprintf(stdout, "checking head commit of branch %s again\n", source_branch_name.c_str());
+     // when PR is complete we check head commit again
+     // for the upper level repo update
+     source_branch_head_commit = get_commit(source_branch_name);
+     if(source_branch_head_commit.empty()) {
+          fprintf(stderr, "failed to get head commit of %s.\n", source_branch_name.c_str());
+          exit(-1);
+     }
 }
 //--------------------------------------------------------------------------------------------------------------------------
