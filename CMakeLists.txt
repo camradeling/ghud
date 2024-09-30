@@ -43,3 +43,10 @@ add_executable(${PROJECT_NAME} ${Sources})
 
 target_link_libraries(${PROJECT_NAME} curl)
 target_link_libraries(${PROJECT_NAME} mxml)
+
+add_custom_target(copy)
+add_custom_command(TARGET copy PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy
+                     ${CMAKE_SOURCE_DIR}/pull_request.md 
+                     ${BIN_DIR}/pull_request.md)
+add_dependencies(${PROJECT_NAME} copy)
