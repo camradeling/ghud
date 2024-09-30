@@ -4,12 +4,27 @@
 #include "gitapi_request.h"
 #include "pull_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
+std::string GHUDNS::GHUDPullRequest::create_body()
+{
+     // TODO: check for errors
+     std::string result = repo->ghud->pr_template;
+     result = result.replace(result.find("DESCRIPTION_PLACEHOLDER", 0),
+               strlen("DESCRIPTION_PLACEHOLDER"), repo->DESCRIPTION_PLACEHOLDER);
+     result = result.replace(result.find("PLATFORMS_PLACEHOLDER", 0),
+               strlen("PLATFORMS_PLACEHOLDER"), repo->PLATFORMS_PLACEHOLDER);
+     result = result.replace(result.find("JIRANUM_PLACEHOLDER", 0),
+               strlen("JIRANUM_PLACEHOLDER"), repo->JIRANUM_PLACEHOLDER);
+     result = result.replace(result.find("COMMITS_PLACEHOLDER", 0),
+               strlen("COMMITS_PLACEHOLDER"), repo->integrated_commits);
+     return result;
+}
+//--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDPullRequest::create()
 {
      std::string url = baseurl;
      nlohmann::json data;
      data["title"] = repo->update_pr_title;
-     data["body"] = body;
+     data["body"] = create_body();
      data["head"] = repo->update_branch_name;
      data["base"] = repo->source_branch_name;
      GHUDNS::GitApiPostRequest request(url, repo->ghud->token(), data.dump());

@@ -23,6 +23,10 @@ public:
 	nlohmann::json source_branch_head_commit;
 	nlohmann::json update_branch_head_commit;
 	std::string update_pr_title="updating submodules hashes";
+	std::string DESCRIPTION_PLACEHOLDER="";
+	std::string PLATFORMS_PLACEHOLDER="";
+	std::string JIRANUM_PLACEHOLDER="";
+	std::string integrated_commits="";
 private:
 	std::shared_ptr<GHUDPullRequest> pr;
 	void mxml_parse_submodules(mxml_node_t* node);

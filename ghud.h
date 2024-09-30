@@ -18,6 +18,7 @@ public:
 	void parse_reviewers(mxml_node_t* node);
 	std::string token() {return user_token;}
 	std::vector<GHUDReviewer> reviewers;
+	std::string pr_template="";
 public:
 	std::string user_token;
 	std::vector<GHUDRepo> repos;

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 //--------------------------------------------------------------------------------------------------------------------------
 #include "ghud.h"
 //--------------------------------------------------------------------------------------------------------------------------
@@ -34,6 +35,11 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
 	}
 	fprintf(stdout, "parsing reviewers\n");
 	parse_reviewers(curnode);
+	std::ifstream myfile ("pull_request.md");
+	std::string line;
+	while (getline(myfile, line))
+		pr_template += line + "\n";
+	fprintf(stdout, "print pr_template: %s\n", pr_template.c_str());
 }
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUD::parse_reviewers(mxml_node_t* node)

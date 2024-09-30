@@ -20,16 +20,16 @@ typedef struct reviewer_s
 class GHUDPullRequest
 {
 public:
-	GHUDPullRequest(std::string url, GHUDRepo* srcrepo, std::string prbody) { baseurl = url; repo = srcrepo; body = prbody; }
+	GHUDPullRequest(std::string url, GHUDRepo* srcrepo) { baseurl = url; repo = srcrepo; }
 	void process();
 private:
 	nlohmann::json create();
 	nlohmann::json add_reviewers();
 	nlohmann::json check_status();
 	nlohmann::json check_review_statuses();
+	std::string create_body();
 	GHUDRepo* repo;
 	std::string baseurl;
-	std::string body;
 	int number=-1;
 	std::vector<GHUDReviewer> reviewers;
 };

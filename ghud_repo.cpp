@@ -36,6 +36,27 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      }
      else
           path = (char *) mxmlGetText(urlnode, NULL);
+     //----------------------
+     // PR attributes
+     urlnode = mxmlFindElement(node, node, "DESCRIPTION_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
+     if(!urlnode) {
+          std::cout << "DESCRIPTION_PLACEHOLDER not found" << std::endl;
+     }
+     else
+          DESCRIPTION_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
+     urlnode = mxmlFindElement(node, node, "PLATFORMS_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
+     if(!urlnode) {
+          std::cout << "PLATFORMS_PLACEHOLDER not found" << std::endl;
+     }
+     else
+          PLATFORMS_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
+     urlnode = mxmlFindElement(node, node, "JIRANUM_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
+     if(!urlnode) {
+          std::cout << "JIRANUM_PLACEHOLDER not found" << std::endl;
+     }
+     else
+          JIRANUM_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
+     //----------------------
      std::regex repo_regex("(.*):(.*)/(.*)\\..*");
      std::smatch sm;
      if (!std::regex_search(url, sm, repo_regex)) {
@@ -165,12 +186,18 @@ std::string GHUDNS::GHUDRepo::update_submodules()
           fprintf(stdout, "Repository %s: no submodules to update. Step out\n", repo_name.c_str());
           return ""; // return empty object
      }
-     std::string commit_data = "Commits included:\n";
+     std::string commit_data="";
      for (auto& slist : commit_list.items()) {
-          commit_data += "\t" + slist.key() + ":\n";
+          commit_data += "    " + slist.key() + ":\n\n";
           for (auto& comm : slist.value()) {
-               commit_data += "\t\t" + nlohmann::to_string(comm["commit"]["message"]) + "\n";
+               std::string message = comm["commit"]["message"];
+               std::string sha = comm["sha"];
+               commit_data += "        " + message + " " + sha + "\n";
           }
+          commit_data += "\n";
+     }
+     for (auto& submodule : submodules) {
+          commit_data += "\n" + submodule.integrated_commits + "\n";
      }
      newtree["base_tree"] = source_branch_head_commit["sha"];
      std::string url = "https://api.github.com/repos/" + workgroup + "/" + repo_name + "/git/trees";
@@ -257,12 +284,12 @@ void GHUDNS::GHUDRepo::process()
           fprintf(stdout, "failed to get head commit of %s.\n", update_branch_name.c_str());
           exit(-1);
      }
-     std::string prbody = update_submodules();
-     if (prbody == "") {
+     integrated_commits = update_submodules();
+     if (integrated_commits == "") {
           return;
      }
 
-     pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest(base_url + "/pulls", this, prbody));
+     pr = std::shared_ptr<GHUDPullRequest>(new GHUDPullRequest(base_url + "/pulls", this));
      pr->process();
 }
 //--------------------------------------------------------------------------------------------------------------------------
