@@ -18,6 +18,7 @@ public:
 	GHUDRepo(mxml_node_t* node, GHUD* gh);
 	void process();
 	GHUD* ghud = nullptr;
+	std::string repo_name="";
 	std::string source_branch_name="";
 	std::string update_branch_name = "";
 	nlohmann::json source_branch_head_commit;
@@ -33,7 +34,6 @@ private:
 	std::string url="";
 	std::string base_url="";
 	std::string workgroup="";
-	std::string repo_name="";
 	std::string path="";
 	std::string parent_ref="";
 	std::vector<GHUDRepo> submodules;

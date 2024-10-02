@@ -22,10 +22,16 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
 		exit(-1);
 	}
 	user_token = std::string(env_p);
-	for (curnode = mxmlFindElement(confnode, confnode, "repo", NULL, NULL, MXML_DESCEND);
+	mxml_node_t* reponode = mxmlFindElement(confnode, confnode, "repos", NULL, NULL, MXML_DESCEND);
+	if (!reponode) {
+		fprintf(stderr, "repos not found");
+		exit(-1);
+	}
+	for (curnode = mxmlFindElement(reponode, reponode, "repo", NULL, NULL, MXML_DESCEND);
 			curnode != NULL;
-			curnode = mxmlFindElement(curnode, confnode, NULL, NULL, NULL, MXML_NO_DESCEND)) {
+			curnode = mxmlFindElement(curnode, reponode, NULL, NULL, NULL, MXML_NO_DESCEND)) {
     	GHUDNS::GHUDRepo repo(curnode, this);
+		fprintf(stdout, "adding repo: %s\n", repo.repo_name.c_str());
     	repos.push_back(repo);
     }
     curnode = mxmlFindElement(confnode, confnode, "reviewers", NULL, NULL, MXML_DESCEND);

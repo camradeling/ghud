@@ -7,7 +7,6 @@
 #include "ghud.h"
 #include "gitapi_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------------------------
 GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
 {
      ghud = gh;
@@ -15,19 +14,19 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      mxml_node_t* seeknode;
      urlnode = mxmlFindElement(node, node, "url", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          fprintf(stderr, "url not found");
+          fprintf(stderr, "url not found\n");
           exit(-1);
      }
      url = (char *) mxmlGetText(urlnode, NULL);
      urlnode = mxmlFindElement(node, node, "branch", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          fprintf(stderr, "source branch name not found");
+          fprintf(stderr, "source branch name not found\n");
           exit(-1);
      }
      source_branch_name = (char *) mxmlGetText(urlnode, NULL);
      urlnode = mxmlFindElement(node, node, "update_branch", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          fprintf(stderr, "update branch name not found");
+          fprintf(stderr, "update branch name not found\n");
      }
      else
           update_branch_name = (char *) mxmlGetText(urlnode, NULL);
@@ -41,19 +40,19 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      // PR attributes
      urlnode = mxmlFindElement(node, node, "DESCRIPTION_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          fprintf(stderr, "DESCRIPTION_PLACEHOLDER not found");
+          fprintf(stderr, "DESCRIPTION_PLACEHOLDER not found\n");
      }
      else
           DESCRIPTION_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
      urlnode = mxmlFindElement(node, node, "PLATFORMS_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          fprintf(stderr, "PLATFORMS_PLACEHOLDER not found");
+          fprintf(stderr, "PLATFORMS_PLACEHOLDER not found\n");
      }
      else
           PLATFORMS_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
      urlnode = mxmlFindElement(node, node, "JIRANUM_PLACEHOLDER", NULL, NULL, MXML_DESCEND_FIRST);
      if(!urlnode) {
-          fprintf(stderr, "JIRANUM_PLACEHOLDER not found");
+          fprintf(stderr, "JIRANUM_PLACEHOLDER not found\n");
      }
      else
           JIRANUM_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
@@ -69,7 +68,7 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      base_url = "https://api.github.com/repos/" + workgroup + "/" + repo_name;
      urlnode = mxmlFindElement(node, node, "update_pr_title", NULL, NULL, MXML_DESCEND);
      if (!urlnode) {
-          fprintf(stderr, "update_pr_title not found, keep default");
+          fprintf(stderr, "update_pr_title not found, keep default\n");
      }
      else {
           update_pr_title = (char *) mxmlElementGetAttr(urlnode, "text");
