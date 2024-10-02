@@ -4,9 +4,13 @@ PRs are created automatically, reviewers are added automatically, but you still 
 Build steps
 
 mkdir build
+
 cd build
+
 cmake ..
+
 make
+
 
 Binaries are put in Binaries folder as well as template config file and template pull-request description.
 You just need to change some nodes in config file according to your setup
@@ -20,13 +24,22 @@ echo "export YOUR_ENV_VAR=ghp_12345678asdfghjk" >> /home/$USER/.bashrc file
 add as many reviewers as you need similar to an example under <reviewers> node
 
 Each repo/submodule has a set of nodes
+
 url - obviously your repo URL
+
 branch - a branch name to update
+
 update_branch - name for temporary update branch that you create and then delete
+
 path - submodule path relative to parent repo root folder. don't set for top-level repo
 
 Next few nodes are setting your data that will replace corresponding placeholders in pull_request.md template
+
 update_pr_title
+
 DESCRIPTION_PLACEHOLDER
+
 PLATFORMS_PLACEHOLDER
+
 JIRANUM_PLACEHOLDER
+
