@@ -19,6 +19,7 @@ public:
 	std::string token() {return user_token;}
 	std::vector<GHUDReviewer> reviewers;
 	std::string pr_template="";
+	std::string api_url="";
 public:
 	std::string user_token;
 	std::vector<GHUDRepo> repos;

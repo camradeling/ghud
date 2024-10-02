@@ -7,6 +7,9 @@
 #include "ghud.h"
 #include "gitapi_request.h"
 //--------------------------------------------------------------------------------------------------------------------------
+static std::regex git_method_regex("git@(.*):(.*)\\/(.*)\\.git");
+static std::regex https_method_regex("https:\\/\\/(.*)\\/(.*)\\/(.*)\\.git");
+//--------------------------------------------------------------------------------------------------------------------------
 GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
 {
      ghud = gh;
@@ -57,15 +60,41 @@ GHUDNS::GHUDRepo::GHUDRepo(mxml_node_t* node, GHUD* gh)
      else
           JIRANUM_PLACEHOLDER = (char *) mxmlElementGetAttr(urlnode, "text");
      //----------------------
-     std::regex repo_regex("(.*):(.*)/(.*)\\..*");
-     std::smatch sm;
-     if (!std::regex_search(url, sm, repo_regex)) {
-     	fprintf(stderr, "parsing repo url, no match\n");
-     	exit(-1);
+     if (url.size() < 3) {
+          fprintf(stderr, "repo url invalid\n");
+          exit(-1);
      }
-     workgroup = sm[2];
-     repo_name = sm[3];
-     base_url = "https://api.github.com/repos/" + workgroup + "/" + repo_name;
+     else if (url.substr(0,3) == "git") {
+          std::regex *repo_regex = &git_method_regex;
+          std::smatch sm;
+          if (!std::regex_search(url, sm, *repo_regex)) {
+               fprintf(stderr, "parsing repo url, no match\n");
+               exit(-1);
+          }
+          workgroup = sm[2];
+          repo_name = sm[3];
+          base_url = ghud->api_url + workgroup + "/" + repo_name;
+     }
+     else if (url.size() < 5) {
+          fprintf(stderr, "repo url invalid\n");
+          exit(-1);
+     }
+     else if (url.substr(0,5) == "https") {
+          std::regex *repo_regex = &https_method_regex;
+          std::smatch sm;
+          if (!std::regex_search(url, sm, *repo_regex)) {
+               fprintf(stderr, "parsing repo url, no match\n");
+               exit(-1);
+          }
+          workgroup = sm[2];
+          repo_name = sm[3];
+          base_url = ghud->api_url + workgroup + "/" + repo_name;
+     }
+     else {
+          fprintf(stderr, "repo url invalid\n");
+          exit(-1);
+     }
+     //----------------------
      urlnode = mxmlFindElement(node, node, "update_pr_title", NULL, NULL, MXML_DESCEND);
      if (!urlnode) {
           fprintf(stderr, "update_pr_title not found, keep default\n");

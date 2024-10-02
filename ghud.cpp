@@ -22,6 +22,16 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
 		exit(-1);
 	}
 	user_token = std::string(env_p);
+	curnode = mxmlFindElement(confnode, confnode, "api_url", NULL, NULL, MXML_DESCEND);
+	if (!curnode) {
+		fprintf(stderr, "api_url not found");
+		exit(-1);
+	}
+	api_url = (char *) mxmlGetText(curnode, NULL);
+	if (api_url.size() == 0) {
+		fprintf(stderr, "api_url invalid\n");
+		exit(-1);
+	}
 	mxml_node_t* reponode = mxmlFindElement(confnode, confnode, "repos", NULL, NULL, MXML_DESCEND);
 	if (!reponode) {
 		fprintf(stderr, "repos not found");
