@@ -271,25 +271,6 @@ void GHUDNS::GHUDRepo::process()
 {
      for (auto& submodule : submodules)
           submodule.process();
-     nlohmann::json branches = list_branches();
-     if (branches.empty()) {
-          fprintf(stderr, "branch list failed\n");
-          exit(-1);
-     }
-     nlohmann::json curnode;
-     nlohmann::json updnode;
-     for (auto& brnode : branches.items()) {
-          if (brnode.value().contains("name") && brnode.value()["name"] == source_branch_name) {
-               curnode = brnode;
-          }
-          else if (brnode.value().contains("name") && brnode.value()["name"] == update_branch_name) {
-               updnode = brnode;
-          }
-     }
-     if(curnode.empty()) {
-          fprintf(stderr, "branch %s doesn\'t exist.\n", source_branch_name.c_str());
-          exit(-1);
-     }
      fprintf(stdout, "checking head commit of branch %s\n", source_branch_name.c_str());
      // when passing a branch name - we get branch head commit
      // when passing sha - we get a specific commit
@@ -302,10 +283,9 @@ void GHUDNS::GHUDRepo::process()
      // if no update branch name specified - this is probably a leaf
      if (update_branch_name == "")
           return;
-     if(!updnode.empty()) {
-          fprintf(stdout, "branch %s exists. Deleting\n", update_branch_name.c_str());
-          delete_branch(update_branch_name);
-     }
+     // if branch delete fails - it's no issue
+     fprintf(stdout, "trying to delete branch %s\n", update_branch_name.c_str());
+     delete_branch(update_branch_name);
      std::string sha = source_branch_head_commit["sha"];
      fprintf(stdout, "forking %s branch from %s commit %s\n", update_branch_name.c_str(),
                                                                  source_branch_name.c_str(),
