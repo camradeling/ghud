@@ -49,4 +49,8 @@ add_custom_command(TARGET copy PRE_BUILD
                      COMMAND ${CMAKE_COMMAND} -E copy
                      ${CMAKE_SOURCE_DIR}/pull_request.md 
                      ${BIN_DIR}/pull_request.md)
+add_custom_command(TARGET copy PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy
+                     ${CMAKE_SOURCE_DIR}/config_test.xml 
+                     ${BIN_DIR}/config_test.xml)
 add_dependencies(${PROJECT_NAME} copy)
