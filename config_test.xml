@@ -1,0 +1,45 @@
+<configuration Version="2.0">
+	<api_url>https://api.github.com/repos/</api_url>
+	<user_token_env>GITHUB_TEST_TOKEN</user_token_env>
+	<reviewers>
+		<reviewer>
+			<name>k111111111111</name>
+			<email>k111111111111@proton.me</email>
+		</reviewer>
+	</reviewers>
+	<repos>
+		<repo>
+			<url>git@github.com:camradeling/test.git</url>
+			<branch>master</branch>
+			<update_branch>test_update_submodules</update_branch>
+			<update_pr_title text="updating test_submodule hash" />
+			<DESCRIPTION_PLACEHOLDER text="updating test_submodule hash" />
+			<PLATFORMS_PLACEHOLDER text="test platform" />
+			<JIRANUM_PLACEHOLDER text="SomeJIRA-1234: jira title" />
+			<submodules>
+				<submodule>
+					<url>git@github.com:camradeling/test_submodule.git</url>
+					<branch>master</branch>
+					<update_branch>test_update_submodules</update_branch>
+					<path>test_submodule</path>
+					<update_pr_title text="updating test_submodule_a and test_submodule_b hashes" />
+					<DESCRIPTION_PLACEHOLDER text="updating test_submodule_a and test_submodule_b hashes" />
+					<PLATFORMS_PLACEHOLDER text="test_submodule platform" />
+					<JIRANUM_PLACEHOLDER text="SomeJIRA-4321: jira title" />
+					<submodules>
+						<submodule>
+							<url>git@github.com:camradeling/test_submodule_a.git</url>
+							<branch>master</branch>
+							<path>test_submodule_a</path>
+						</submodule>
+						<submodule>
+							<url>git@github.com:camradeling/test_submodule_b.git</url>
+							<branch>master</branch>
+							<path>test_submodule_b</path>
+						</submodule>
+					</submodules>
+				</submodule>
+			</submodules>
+		</repo>
+	</repos>
+</configuration>
