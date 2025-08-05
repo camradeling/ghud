@@ -22,7 +22,7 @@ nlohmann::json GHUDNS::GitApiRequest::j_reply()
 		return jf;
 	}
 	catch(nlohmann::json::parse_error& ex) {
-		fprintf(stderr, "error parsing reply\n");
+		fprintf(stderr, "\nerror parsing reply\n");
 		return nlohmann::json(); //empty
 	}
 }
@@ -31,7 +31,7 @@ int GHUDNS::GitApiRequest::perform()
 {
 	int res = GHUDNS::CurlRequest::perform();
 	if (CURL_DEBUG)
-		std::cout << std::setw(4) << j_reply();
+		std::cout << std::setw(4) << j_reply() << std::endl;
 	return res;
 }
 //--------------------------------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ void GHUDNS::GitApiPostRequest::add_data()
 {
 	if (curl) {
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)postdata.size());
-		fprintf(stdout, "post data: %s\n", postdata.c_str());
+		fprintf(stdout, "\npost data: %s\n", postdata.c_str());
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
 	}
 }
@@ -69,7 +69,7 @@ void GHUDNS::GitApiPatchRequest::add_data()
 {
 	if (curl) {
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)postdata.size());
-		fprintf(stdout, "patch data: %s\n", postdata.c_str());
+		fprintf(stdout, "\npatch data: %s\n", postdata.c_str());
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
 	}
 }
