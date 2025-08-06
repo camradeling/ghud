@@ -262,7 +262,7 @@ nlohmann::json GHUDNS::GHUDRepo::get_tree(std::string sha)
 //--------------------------------------------------------------------------------------------------------------------------
 nlohmann::json GHUDNS::GHUDRepo::move_branch_head(std::string branch, std::string sha)
 {
-     std::string url = base_url + "/refs/heads/" + branch;
+     std::string url = base_url + "/git/refs/heads/" + branch;
      nlohmann::json data;
      data["sha"] = sha;
      GHUDNS::GitApiPatchRequest request(url, ghud->token(), data.dump());
