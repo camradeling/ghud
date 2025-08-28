@@ -13,7 +13,7 @@ namespace GHUDNS
 class GHUD
 {
 public:
-	GHUD(mxml_node_t* confnode);
+	GHUD(mxml_node_t* confnode, std::string template_arg);
 	void process();
 	void parse_reviewers(mxml_node_t* node);
 	std::string token() {return user_token;}

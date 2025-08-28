@@ -179,7 +179,6 @@ std::string GHUDNS::GHUDRepo::update_submodules()
      // get master tree
      nlohmann::json tree = get_tree(source_branch_head_commit["commit"]["tree"]["sha"]);
      nlohmann::json newtree;
-     exit(0);
      // traverse submodules and if their branch head and submodule ref don't match
      // add to newtree
      nlohmann::json commit_list;
@@ -195,6 +194,9 @@ std::string GHUDNS::GHUDRepo::update_submodules()
                                    submodule.parent_ref.c_str(),
                                    nlohmann::to_string(submodule.source_branch_head_commit["sha"]).c_str());
                          nlohmann::json submodule_headref = submodule.get_commit(submodule.parent_ref);
+                         fprintf(stdout, "\nrequested submodule %s branch %s commits since %s\n", submodule.repo_name.c_str(),
+                                                  submodule.source_branch_name.c_str(),
+                                                  nlohmann::to_string(submodule_headref["commit"]["committer"]["date"]).c_str());
                          nlohmann::json new_commits = submodule.get_branch_commits_since(submodule.source_branch_name,
                                    submodule_headref["commit"]["committer"]["date"]);
                          // exclude parent_ref submodule commit
@@ -229,21 +231,31 @@ std::string GHUDNS::GHUDRepo::update_submodules()
           }
           commit_data += "\n";
      }
+
      for (auto& submodule : submodules) {
           commit_data += submodule.integrated_commits;
      }
+
      newtree["base_tree"] = source_branch_head_commit["sha"];
-     std::string url = base_url + workgroup + "/" + repo_name + "/trees";
+     std::string url = base_url + "/git/trees";
      fprintf(stdout, "\n%s: Adding new tree to update branch\n", repo_name.c_str());
      GHUDNS::GitApiPostRequest request(url, ghud->token(), newtree.dump());
      request.perform();
      nlohmann::json tree_reply = request.j_reply();
+     if (tree_reply.empty()) {
+          fprintf(stderr, "\nreply empty\n");
+          exit(-1);
+     }
+     if (tree_reply["sha"].empty()) {
+          fprintf(stdout, "\n%s: Failed to add new tree to update branch\n", repo_name.c_str());
+          exit(-1);
+     }
      //---------------------------------------
      nlohmann::json commit;
      commit["message"] = "updating submodules hash";
      commit["tree"] = tree_reply["sha"];
      commit["parents"].push_back(update_branch_head_commit["sha"]);
-     std::string url2 = base_url + workgroup + "/" + repo_name + "/commits";
+     std::string url2 = base_url + "/git/commits";
      fprintf(stdout, "\n%s: Adding new commit to update branch %s\n", repo_name.c_str(), update_branch_name.c_str());
      GHUDNS::GitApiPostRequest request2(url2, ghud->token(), commit.dump());
      request2.perform();

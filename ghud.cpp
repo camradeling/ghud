@@ -3,7 +3,7 @@
 //--------------------------------------------------------------------------------------------------------------------------
 #include "ghud.h"
 //--------------------------------------------------------------------------------------------------------------------------
-GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
+GHUDNS::GHUD::GHUD(mxml_node_t* confnode, std::string template_arg)
 {
 	mxml_node_t* curnode;
 	curnode = mxmlFindElement(confnode, confnode, "user_token_env", NULL, NULL, MXML_DESCEND);
@@ -50,10 +50,7 @@ GHUDNS::GHUD::GHUD(mxml_node_t* confnode)
 		exit(-1);
 	}
 	parse_reviewers(curnode);
-	std::ifstream myfile ("pull_request.md");
-	std::string line;
-	while (getline(myfile, line))
-		pr_template += line + "\n";
+	pr_template = template_arg;
 }
 //--------------------------------------------------------------------------------------------------------------------------
 void GHUDNS::GHUD::parse_reviewers(mxml_node_t* node)
